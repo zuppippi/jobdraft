@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { position, employmentType, requiredSkills, appealPoints } = req.body;
@@ -20,11 +19,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 500文字程度でお願いします。
 `;
 
-  const completion = await openai.createChatCompletion({
+  const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const result = completion.data.choices[0].message?.content;
+  const result = completion.choices[0].message.content;
   res.status(200).json({ result });
 }

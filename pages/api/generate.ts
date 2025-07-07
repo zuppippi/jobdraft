@@ -6,6 +6,11 @@ const openai = new OpenAI({
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ result: 'Method Not Allowed' });
+  }
+
   try {
     const { position, employmentType, requiredSkills, appealPoints } = req.body;
 
@@ -29,13 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ result });
   } catch (error: any) {
     console.error('❌ OpenAI API Error:', error);
-
-    // エラー詳細も返すようにする
     const message =
       error?.response?.data?.error?.message || error?.message || 'Unknown error';
-
-    res.status(500).json({
-      result: `サーバーエラー：${message}`,
-    });
+    res.status(500).json({ result: `サーバーエラー：${message}` });
   }
 }

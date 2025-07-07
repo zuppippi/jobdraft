@@ -14,6 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { position, employmentType, requiredSkills, appealPoints } = req.body;
 
+    if (!position || !employmentType || !requiredSkills || !appealPoints) {
+      return res.status(400).json({ result: 'すべての項目を入力してください。' });
+    }
+
     const prompt = `
 以下の情報をもとに、求人票の文章をビジネス調で作成してください。
 
@@ -30,12 +34,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       messages: [{ role: 'user', content: prompt }],
     });
 
-    const result = completion.choices[0].message.content;
+    const result = completion.choices?.[0]?.message?.content;
+    if (!result) {
+      return res.status(500).json({ result: '生成に失敗しました（空の応答）' });
+    }
+
     res.status(200).json({ result });
   } catch (error: any) {
     console.error('❌ OpenAI API Error:', error);
+
     const message =
-      error?.response?.data?.error?.message || error?.message || 'Unknown error';
-    res.status(500).json({ result: `サーバーエラー：${message}` });
+      error?.response?.data?.error?.message ||
+      error?.message ||
+      'Unknown server error';
+
+    res.status(500).json({
+      result: `サーバーエラー：${message}`,
+    });
   }
 }

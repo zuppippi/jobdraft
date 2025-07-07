@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ result: 'Method Not Allowed' });
   }
 
-  try {
+    try {
     const { position, employmentType, requiredSkills, appealPoints } = req.body;
 
     if (!position || !employmentType || !requiredSkills || !appealPoints) {
@@ -34,6 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       messages: [{ role: 'user', content: prompt }],
     });
 
+    console.log('OpenAI response:', JSON.stringify(completion, null, 2)); // ← これが重要！
+
     const result = completion.choices?.[0]?.message?.content;
     if (!result) {
       return res.status(500).json({ result: '生成に失敗しました（空の応答）' });
@@ -44,9 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('❌ OpenAI API Error:', error);
 
     const message =
-      error?.response?.data?.error?.message ||
-      error?.message ||
-      'Unknown server error';
+      error?.response?.data?.error?.message || error?.message || 'Unknown server error';
 
     res.status(500).json({
       result: `サーバーエラー：${message}`,

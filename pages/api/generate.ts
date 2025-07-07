@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 職種: ${position}
 雇用形態: ${employmentType}
 必須スキル: ${requiredSkills}
-訴求ポイント: ${appealPoints}
+魅力ポイント: ${appealPoints}
 
 500文字程度でお願いします。
 `;
@@ -28,7 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = completion.choices[0].message.content;
     res.status(200).json({ result });
   } catch (error: any) {
-    console.error('❗ OpenAIエラー:', error);
-    res.status(500).json({ result: 'サーバーでエラーが発生しました。APIキーや構文を確認してください。' });
+    console.error('❌ OpenAI API Error:', error);
+
+    // エラー詳細も返すようにする
+    const message =
+      error?.response?.data?.error?.message || error?.message || 'Unknown error';
+
+    res.status(500).json({
+      result: `サーバーエラー：${message}`,
+    });
   }
 }
